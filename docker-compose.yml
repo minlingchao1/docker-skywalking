@@ -1,0 +1,42 @@
+version: "3.4"
+services:
+
+    skywalking:
+        build: 
+            context: ./skywalking
+            dockerfile: Dockerfile
+        image: skywalking
+        container_name: skywalking
+        volumes: 
+             - /home/volumes/skywalking/logs:/skywalking/logs
+        depends_on: 
+             - elasticsearch
+        network_mode: service:elasticsearch
+
+    elasticsearch:
+        build: 
+            context: ./elasticsearch
+            dockerfile: Dockerfile
+        image: elasticsearch
+        restart: always
+        container_name: elasticsearch
+        environment:
+            TZ: Asia/Shanghai
+        volumes: 
+          - /home/volumes/elasticsearch/logs:/usr/share/elasticsearch/logs
+          - /home/volumes/elasticsearch/config/elasticsearch.yml:/usr/local/elasticsearch/config/elasticsearch.yml
+        ports: 
+            - 9200:9200
+            - 9300:9300
+            - 10800:10800
+            - 11800:11800
+            - 12800:12800
+            - 8080:8080
+      
+  
+
+      
+  
+    
+
+

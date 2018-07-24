@@ -1,0 +1,36 @@
+FROM openjdk:8-jre-alpine
+
+LABEL maintainer="Badboy <287564883@@qq.com>"
+
+ARG TZ="Asia/Shanghai"
+
+ENV TZ ${TZ}
+ENV ELASTICSEARCH_VERSION 5.6.10
+ENV ELASTICSEARCH_HOME /usr/local/elasticsearch
+ENV ELASTICSEARCH_TARBALL https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+
+RUN addgroup -S elasticsearch 
+RUN adduser -S -G elasticsearch elasticsearch 
+RUN  wget -O elasticsearch.tar.gz "${ELASTICSEARCH_TARBALL}"
+RUN export GNUPGHOME="$(mktemp -d)"
+RUN tar -zxf elasticsearch.tar.gz
+RUN mv elasticsearch-${ELASTICSEARCH_VERSION} ${ELASTICSEARCH_HOME}
+RUN mkdir -p /data/elasticsearch /var/log/elasticsearch
+RUN chown -R elasticsearch:elasticsearch ${ELASTICSEARCH_HOME} /data/elasticsearch /var/log/elasticsearch
+
+COPY /elasticsearch/docker-entrypoint.sh /entrypoint.sh
+RUN chmod +x  /entrypoint.sh
+
+RUN ln -sf ${ELASTICSEARCH_HOME}/bin/* /usr/local/bin
+RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
+RUN echo ${TZ} > /etc/timezone
+RUN rm -rf elasticsearch.tar.gz
+RUN rm -rf ${ELASTICSEARCH_HOME}/bin/*.exe
+RUN rm -rf ${ELASTICSEARCH_HOME}/bin/*.bat
+RUN export ES_JAVA_OPTS="-Xms256m -Xmx256m"
+
+USER elasticsearch
+VOLUME /data/elasticsearch /var/log/elasticsearch 
+EXPOSE 9200 9300
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["elasticsearch"]
